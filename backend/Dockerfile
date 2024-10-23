@@ -1,7 +1,7 @@
 # Backend Dockerfile
 
 # Use Node.js base image
-FROM node:23-alpine
+FROM node:22
 
 # Set the working directory inside the container
 WORKDIR /app

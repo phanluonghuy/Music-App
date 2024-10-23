@@ -15,4 +15,4 @@ COPY . .
 
 # RUN PROJECT
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
