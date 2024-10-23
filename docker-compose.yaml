@@ -1,0 +1,38 @@
+version: '3'
+services:
+  # Backend service
+  backend:
+    build: ./backend
+    ports:
+      - "1337:1337"
+    depends_on:
+      - mongo
+    networks:
+      - musicapp-network
+
+  # Frontend service
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:3000"
+    depends_on:
+      - backend
+    command: npm run dev -- --host
+    networks:
+      - musicapp-network
+
+  # MongoDB service
+  mongo:
+    image: mongo:8.0.1-noble
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - musicapp-network
+
+volumes:
+  mongo-data:
+
+networks:
+  musicapp-network:
