@@ -1,4 +1,5 @@
-/node_modules
-
-# Build output
-/build
+node_modules
+Dockerfile
+dist
+.dockerignore
+.gitignore
