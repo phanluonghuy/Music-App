@@ -1,14 +1,14 @@
 # Backend Dockerfile
 
 # Use Node.js base image
-FROM node:22
+FROM node:23-alpine3.19
 
 # Set the working directory inside the container
 WORKDIR /app
 
 # Copy package.json and install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 # Copy the rest of the backend code
 COPY . .

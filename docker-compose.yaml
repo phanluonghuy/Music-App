@@ -14,7 +14,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "5173:3000"
+      - "3000:3000"
     depends_on:
       - backend
     # command: npm run dev -- --host

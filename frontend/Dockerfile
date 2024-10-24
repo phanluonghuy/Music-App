@@ -1,7 +1,7 @@
 # Frontend Dockerfile
 
 # Use Node.js base image
-FROM node:22
+FROM node:23-alpine3.19
 
 # Set working directory
 WORKDIR /app
