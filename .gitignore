@@ -4,7 +4,7 @@
 /node_modules
 
 # Environment variables
-../backend/.env
+# ../backend/.env
 
 # Build output
 /build
