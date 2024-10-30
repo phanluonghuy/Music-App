@@ -77,6 +77,31 @@ services:
     restart: always
     networks:
       - musicapp-network
+  mongo-init-replica:
+    image: mongo:8.0.1-noble
+    depends_on:
+      - mongo-primary
+      - mongo-secondary-1
+      - mongo-secondary-2
+      - mongo-secondary-3
+    networks:
+      - musicapp-network
+    entrypoint: [
+      "sh", "-c", "
+      sleep 10;
+      mongo --host mongo-primary:27017 <<EOF
+        rs.initiate({
+          _id: 'rs0',
+          members: [
+            { _id: 0, host: 'mongo-primary:27017', priority: 2 },
+            { _id: 1, host: 'mongo-secondary-1:27017', priority: 1 },
+            { _id: 2, host: 'mongo-secondary-2:27017', priority: 0 },
+            { _id: 3, host: 'mongo-secondary-3:27017', priority: 0 }
+          ]
+        })
+      EOF
+      "
+    ]
 
 volumes:
   mongo-primary:
@@ -87,4 +112,6 @@ volumes:
 networks:
   musicapp-network:
     driver: bridge
+
+
   
