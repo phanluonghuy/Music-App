@@ -1,4 +1,4 @@
-version: '3'
+version: '3.1'
 services:
   # Backend service
   backend:
@@ -6,7 +6,7 @@ services:
     ports:
       - "1337:1337"
     depends_on:
-      - mongo
+      - mongo-primary
     networks:
       - musicapp-network
 
@@ -22,17 +22,69 @@ services:
       - musicapp-network
 
   # MongoDB service
-  mongo:
+  mongo-primary:
+    container_name: mongo-primary
     image: mongo:8.0.1-noble
     ports:
       - "27017:27017"
+    command: mongod --replSet "rs0"
+    environment:
+      - MONGO_INITDB_REPLICASET=rs0
     volumes:
-      - mongo-data:/data/db
+      - ./mongodb/primary:/data/db
+    restart: always
+    networks:
+      - musicapp-network
+
+  mongo-secondary-1:
+    container_name: mongo-secondary-1
+    image: mongo:8.0.1-noble
+    ports:
+      - "27018:27017"
+    command: mongod --replSet "rs0"
+    environment:
+      - MONGO_INITDB_REPLICASET=rs0
+    volumes:
+      - ./mongodb/secondary1:/data/db
+    restart: always
+    networks:
+      - musicapp-network
+
+  mongo-secondary-2:
+    container_name: mongo-secondary-2
+    image: mongo:8.0.1-noble
+    ports:
+      - "27019:27017"
+    command: mongod --replSet "rs0"
+    environment:
+      - MONGO_INITDB_REPLICASET=rs0
+    volumes:
+      - ./mongodb/secondary2:/data/db
+    restart: always
+    networks:
+      - musicapp-network
+
+  mongo-secondary-3:
+    container_name: mongo-secondary-3
+    image: mongo:8.0.1-noble
+    ports:
+      - "27020:27017"
+    command: mongod --replSet "rs0"
+    environment:
+      - MONGO_INITDB_REPLICASET=rs0
+    volumes:
+      - ./mongodb/secondary3:/data/db
+    restart: always
     networks:
       - musicapp-network
 
 volumes:
-  mongo-data:
+  mongo-primary:
+  mongo-secondary-1:
+  mongo-secondary-2:
+  mongo-secondary-3:
 
 networks:
   musicapp-network:
+    driver: bridge
+  

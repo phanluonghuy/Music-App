@@ -16,7 +16,7 @@ const Register = () => {
   if ( document.domain === "localhost" ) {
     __URL__ = "http://localhost:1337";
   } else {
-    __URL__ = "https://music-player-app-backend-yq0c.onrender.com";
+    __URL__ = "http://20.255.96.183";
   }
 
   const handleSubmit = async (e) => {
