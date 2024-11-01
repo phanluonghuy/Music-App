@@ -51,24 +51,24 @@ app.use("/api/v1/playlist", userJwtMiddleware, playlistRoutes);
 app.get("/api/v1/stream/:filename", streamSong);
 
 
-// app.get('/api/v1/songs', getSongs);
-app.get('/api/v1/songs', async (req, res) => {
-  try {
-    const cachedSongs = await redisClient.get('songs');
+app.get('/api/v1/songs', getSongs);
+// app.get('/api/v1/songs', async (req, res) => {
+//   try {
+//     const cachedSongs = await redisClient.get('songs');
     
-    if (cachedSongs) {
-      return res.json(JSON.parse(cachedSongs));
-    }
+//     if (cachedSongs) {
+//       return res.json(JSON.parse(cachedSongs));
+//     }
 
-    const songs = await getSongs();
-    await redisClient.set('songs', JSON.stringify(songs), { EX: 3600 }); // Cache for 1 hour
+//     const songs = await getSongs();
+//     await redisClient.set('songs', JSON.stringify(songs), { EX: 3600 }); // Cache for 1 hour
 
-    res.json(songs);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error retrieving songs" });
-  }
-});
+//     res.json(songs);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error retrieving songs" });
+//   }
+// });
 
 
 // Fallback to index.html for SPA

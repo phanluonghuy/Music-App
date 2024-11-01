@@ -6,11 +6,12 @@ services:
     ports:
       - "1337:1337"
     depends_on:
-      - mongo-primary
+      - shard1-primary
+      - shard2-secondary
       - redis
     networks:
       - musicapp-network
-
+  
   redis:
     image: redis:alpine
     container_name: redis_container
@@ -18,6 +19,7 @@ services:
       - "6379:6379"
     networks:
       - musicapp-network
+
   # Frontend service
   frontend:
     build: ./frontend
@@ -25,98 +27,56 @@ services:
       - "3000:3000"
     depends_on:
       - backend
-    # command: npm run dev -- --host
     networks:
       - musicapp-network
 
-
-  # MongoDB service
-  mongo-primary:
-    container_name: mongo-primary
+  # Config Server
+  configsvr:
     image: mongo:8.0.1-noble
+    container_name: configsvr_container
+    command: mongod --configsvr --replSet configReplSet --port 27017
     ports:
       - "27017:27017"
-    command: mongod --replSet "rs0"
-    environment:
-      - MONGO_INITDB_REPLICASET=rs0
-    volumes:
-      - ./mongodb/primary:/data/db
-    restart: always
     networks:
       - musicapp-network
 
-  mongo-secondary-1:
-    container_name: mongo-secondary-1
+  # Shard 1 - Primary
+  shard1-primary:
     image: mongo:8.0.1-noble
+    container_name: shard1-primary_container
+    command: mongod --shardsvr --replSet shard1 --port 27018
     ports:
-      - "27018:27017"
-    command: mongod --replSet "rs0"
-    environment:
-      - MONGO_INITDB_REPLICASET=rs0
-    volumes:
-      - ./mongodb/secondary1:/data/db
-    restart: always
+      - "27018:27018"
     networks:
       - musicapp-network
 
-  mongo-secondary-2:
-    container_name: mongo-secondary-2
+  # Shard 2 - Secondary
+  shard2-secondary:
     image: mongo:8.0.1-noble
+    container_name: shard2-secondary_container
+    command: mongod --shardsvr --replSet shard2 --port 27019
     ports:
-      - "27019:27017"
-    command: mongod --replSet "rs0"
-    environment:
-      - MONGO_INITDB_REPLICASET=rs0
-    volumes:
-      - ./mongodb/secondary2:/data/db
-    restart: always
+      - "27019:27019"
     networks:
       - musicapp-network
 
-  mongo-secondary-3:
-    container_name: mongo-secondary-3
+  # Mongos Router
+  mongos:
     image: mongo:8.0.1-noble
-    ports:
-      - "27020:27017"
-    command: mongod --replSet "rs0"
-    environment:
-      - MONGO_INITDB_REPLICASET=rs0
-    volumes:
-      - ./mongodb/secondary3:/data/db
-    restart: always
-    networks:
-      - musicapp-network
-  mongo-init-replica:
-    image: mongo:8.0.1-noble
+    container_name: mongos_container
     depends_on:
-      - mongo-primary
-      - mongo-secondary-1
-      - mongo-secondary-2
-      - mongo-secondary-3
+      - configsvr
+      - shard1-primary
+      - shard2-secondary
+    command: mongos --configdb configReplSet/configsvr:27017 --bind_ip_all
+    ports:
+      - "27020:27020"
     networks:
       - musicapp-network
-    entrypoint: [
-      "sh", "-c", "
-      sleep 10;
-      mongo --host mongo-primary:27017 <<EOF
-        rs.initiate({
-          _id: 'rs0',
-          members: [
-            { _id: 0, host: 'mongo-primary:27017', priority: 2 },
-            { _id: 1, host: 'mongo-secondary-1:27017', priority: 1 },
-            { _id: 2, host: 'mongo-secondary-2:27017', priority: 0 },
-            { _id: 3, host: 'mongo-secondary-3:27017', priority: 0 }
-          ]
-        })
-      EOF
-      "
-    ]
 
 volumes:
-  mongo-primary:
-  mongo-secondary-1:
-  mongo-secondary-2:
-  mongo-secondary-3:
+  shard1-primary:
+  shard2-secondary:
 
 networks:
   musicapp-network:
