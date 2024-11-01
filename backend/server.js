@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import mongoose from "mongoose";
+import os from "os"
 
 // Importing routes
 import authRoutes from "./routes/authRoutes.js";
@@ -16,7 +17,6 @@ dotenv.config();
 
 // Initialize Redis client
 import { createClient } from 'redis';
-import e from "express";
 
 const redisClient = createClient({
   url: 'redis://redis:6379'
@@ -60,5 +60,5 @@ app.get("*", (req, res) => {
 
 // Start the server
 app.listen(1337, () => {
-  console.log(`Server is running at localhost:1337`);
+  console.log(`${os.hostname()}:Server is running at localhost:1337`);
 });

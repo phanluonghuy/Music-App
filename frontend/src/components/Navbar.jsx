@@ -29,7 +29,7 @@ const Navbar = () => {
       <nav className=" mx-auto w-full flex justify-between items-center sticky top-5">
         <Link to={'/'} className="w-32 text-white">
           {/* <Logo /> */}
-          Music Stream
+          MyTune
         </Link>
         <button
           onClick={toggleMenu}

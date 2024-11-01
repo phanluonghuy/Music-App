@@ -21,7 +21,7 @@ const Home = () => {
     >
      <div className="flex flex-col justify-center items-center space-y-6 bg-[rgba(0,0,0,0.5)] w-full h-screen lg:space-y-8">
         <h1 className="text-4xl lg:text-6xl text-white font-extrabold drop-shadow-lg">
-          Music Stream
+          MyTune
         </h1>
         <p className="text-white text-2xl lg:text-4xl drop-shadow-md">
           Listen to your favorite songs
