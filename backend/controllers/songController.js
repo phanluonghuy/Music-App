@@ -1,12 +1,14 @@
 import conn from "../config/db.js";
 import fs from "fs";
 import mongodb from "mongodb";
+import { redisClient } from "../server.js";
 
 // @desc    Add a new song
 // @route   POST /api/v1/song/upload
 // @access  Private
 export const addSong = async (req, res) => {
   try {
+    await redisClient.del("allSongs");
     // getting the data from the request body
     const { title, artist, album, description } = req.body;
 
@@ -67,6 +69,7 @@ export const addSong = async (req, res) => {
 //@access Private
 export const deleteSong = async (req, res) => {
   try {
+    await redisClient.del("allSongs");
     console.log("hitting the server");
     console.log(req.query.file);
     const { id } = req.params;
@@ -113,18 +116,34 @@ export const deleteSong = async (req, res) => {
 // @access  Public
 export const getSongs = async (req, res) => {
   try {
-   
+    // Check if songs are in cache
+    const cachedSongs = await redisClient.get("allSongs");
+
+    if (cachedSongs) {
+      // If data is found in Redis, return it
+      console.log("Fetching songs from Redis cache");
+      return res.status(200).json({ songs: JSON.parse(cachedSongs) });
+    }
+
+    // Fetch from MongoDB if cache is empty
+    console.log("Fetching songs from MongoDB");
     const db = conn.db("music_streaming");
     const collection = db.collection("songs");
     const songs = await collection.find({}).toArray();
+
     if (songs.length === 0) {
-      res.status(404);
-      throw new Error("No songs found");
+      return res.status(404).json({ error: "No songs found" });
     }
+
+    // Store the songs in Redis for next time
+    await redisClient.set("allSongs", JSON.stringify(songs), {
+      EX: 3600, // Expiry time of 1 hour
+    });
+
     res.status(200).json({ songs });
   } catch (error) {
     console.log(error);
-    return res.json({ error: error.message, status: "error" });
+    res.status(500).json({ error: error.message });
   }
 };
 

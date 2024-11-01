@@ -35,8 +35,11 @@ services:
     image: mongo:8.0.1-noble
     container_name: configsvr_container
     command: mongod --configsvr --replSet configReplSet --port 27017
-    ports:
-      - "27017:27017"
+    # ports:
+    #   - "27017:27017"
+    links:
+      - shard1-primary
+      - shard2-secondary
     networks:
       - musicapp-network
 
@@ -44,9 +47,9 @@ services:
   shard1-primary:
     image: mongo:8.0.1-noble
     container_name: shard1-primary_container
-    command: mongod --shardsvr --replSet shard1 --port 27018
-    ports:
-      - "27018:27018"
+    command: mongod --shardsvr --replSet shard1 --port 27017
+    # ports:
+    #   - "27018:27017"
     networks:
       - musicapp-network
 
@@ -54,9 +57,9 @@ services:
   shard2-secondary:
     image: mongo:8.0.1-noble
     container_name: shard2-secondary_container
-    command: mongod --shardsvr --replSet shard2 --port 27019
-    ports:
-      - "27019:27019"
+    command: mongod --shardsvr --replSet shard2 --port 27017
+    # ports:
+    #   - "27019:27017"
     networks:
       - musicapp-network
 
@@ -70,7 +73,7 @@ services:
       - shard2-secondary
     command: mongos --configdb configReplSet/configsvr:27017 --bind_ip_all
     ports:
-      - "27020:27020"
+      - "27017:27017"
     networks:
       - musicapp-network
 
