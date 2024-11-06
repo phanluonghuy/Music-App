@@ -129,7 +129,7 @@ const MusicPlayer = () => {
       <audio ref={audioRef} preload="auto">
         <source
           ref={sourceRef}
-          src={`http://20.255.96.183/api/v1/stream/4979f9de26aadec57449c4690ab0ad60`}
+          src={`http://process.env.WEB_URI/api/v1/stream/4979f9de26aadec57449c4690ab0ad60`}
           type="audio/mpeg"
         />
       </audio>

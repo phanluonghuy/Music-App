@@ -17,7 +17,7 @@ const Login = () => {
   if ( document.domain === "localhost" ) {
     __URL__ = "http://localhost:1337";
   } else {
-    __URL__ = "http://20.255.96.183";
+    __URL__ = "http://process.env.WEB_URI";
   }
 
   const handleSubmit = async (e) =>{

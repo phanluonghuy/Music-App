@@ -36,7 +36,7 @@ const PlaylilstSong = ({ title, artistName, songSrc ,playlistId }) => {
 
   const removeSong = async () => {
     const { data,status } = await axios.delete(
-      `http://20.255.96.183/api/v1/playlist/remove/${playlistId}?song=${title}`,
+      `http://process.env.WEB_URI/api/v1/playlist/remove/${playlistId}?song=${title}`,
       {
         headers,
       }

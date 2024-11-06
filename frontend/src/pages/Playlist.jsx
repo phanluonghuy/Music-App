@@ -24,7 +24,7 @@ const Playlist = () => {
   const deletePlaylist = async () => {
     setLoading(true);
     const { data, status } = await axios.delete(
-      `http://20.255.96.183/api/v1/playlist/delete/${id}`,
+      `http://process.env.WEB_URI/api/v1/playlist/delete/${id}`,
       { headers }
     );
     if (status === 200) {

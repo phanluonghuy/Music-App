@@ -9,7 +9,6 @@ services:
     environment:
       - MONGO_URI=mongodb://23.102.234.224:27017/music_streaming
       - JWT_SECRET=eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcyOTA5MDMwOCwiaWF0IjoxNzI5MDkwMzA4fQ.rupFvTyZwxI_oeZydy3gmxJv9SPiik9-PqjZQwze1mY
-      - MONGO_URI=23.102.234.224
     depends_on:
       - mongo
       - redis
@@ -69,17 +68,13 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx-entrypoint.sh:/docker-entrypoint.d/00-nginx-entrypoint.sh
-      - ./nginx.conf:/etc/nginx/nginx.conf.template  # Use the template version of nginx.conf
+      - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - backend
       - frontend
-    environment:
-      - SERVER_IP=23.102.234.224  # Set IP address for Nginx as an environment variable
     deploy:
       restart_policy:
         condition: on-failure
-
 
 volumes:
   mongo_data:
