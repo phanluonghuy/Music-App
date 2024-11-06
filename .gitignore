@@ -1,0 +1,25 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# Environment variables
+# ../backend/.env
+
+# Build output
+/build
+
+# Ignore MongoDB database files
+mongodb/
+*.log
+*.lock
+*.ns
+*.wt
+*.json
+*.bson
+*.gz
+data/
+dump/
+
+
+*.tar

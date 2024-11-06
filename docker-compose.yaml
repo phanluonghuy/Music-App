@@ -1,0 +1,78 @@
+version: '3.8'
+services:
+  # Backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/music_streaming
+      - JWT_SECRET=eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcyOTA5MDMwOCwiaWF0IjoxNzI5MDkwMzA4fQ.rupFvTyZwxI_oeZydy3gmxJv9SPiik9-PqjZQwze1mY
+    networks:
+      - musicapp-network
+    deploy:
+      replicas: 5
+      restart_policy:
+        condition: on-failure
+
+  # Redis service
+  redis:
+    image: redis:alpine
+    container_name: redis_container
+    networks:
+      - musicapp-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    networks:
+      - musicapp-network
+    depends_on:
+      - nginx
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  # MongoDB service
+  mongo:
+    image: mongo:8.0.1-noble
+    container_name: mongo_container
+    environment:
+      - MONGO_INITDB_DATABASE=music_streaming
+    networks:
+      - musicapp-network
+    volumes:
+      - mongo_data:/data/db
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+
+  # Nginx service
+  nginx:
+    image: nginx:latest
+    networks:
+      - musicapp-network
+    ports:
+      - "1337:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  mongo_data:
+
+networks:
+  musicapp-network:
+    driver: overlay
