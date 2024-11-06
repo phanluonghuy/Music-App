@@ -2,18 +2,19 @@ version: '3.8'
 services:
   # Backend service
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    # build:
+    #   context: ./backend
+    #   dockerfile: Dockerfile
+    image: huyphanluong/music-app-backend:latest
     environment:
       - MONGO_URI=mongodb://mongo:27017/music_streaming
       - JWT_SECRET=eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcyOTA5MDMwOCwiaWF0IjoxNzI5MDkwMzA4fQ.rupFvTyZwxI_oeZydy3gmxJv9SPiik9-PqjZQwze1mY
     networks:
       - musicapp-network
-    deploy:
-      replicas: 5
-      restart_policy:
-        condition: on-failure
+    # deploy:
+    #   replicas: 5
+    #   restart_policy:
+    #     condition: on-failure
 
   # Redis service
   redis:
@@ -27,17 +28,18 @@ services:
 
   # Frontend service
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    # build:
+    #   context: ./frontend
+    #   dockerfile: Dockerfile
+    image: huyphanluong/music-app-frontend:latest
     networks:
       - musicapp-network
     depends_on:
       - nginx
-    deploy:
-      replicas: 2
-      restart_policy:
-        condition: on-failure
+    # deploy:
+    #   replicas: 2
+    #   restart_policy:
+    #     condition: on-failure
 
   # MongoDB service
   mongo:
