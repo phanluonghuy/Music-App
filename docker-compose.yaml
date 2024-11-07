@@ -5,14 +5,16 @@ services:
     # build:
     #   context: ./backend
     #   dockerfile: Dockerfile
-    image: huyphanluong/music-app-backend:latest
+    image: huyphanluong/music-app-backend:v2
     environment:
-      - MONGO_URI=mongodb://23.102.234.224:27017/music_streaming
+      - MONGO_URI=mongodb://webapp_mongo:27017/music_streaming
       - JWT_SECRET=eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTcyOTA5MDMwOCwiaWF0IjoxNzI5MDkwMzA4fQ.rupFvTyZwxI_oeZydy3gmxJv9SPiik9-PqjZQwze1mY
-      - MONGO_URI=23.102.234.224
+      - WEB_URI=23.102.234.224
     depends_on:
       - mongo
       - redis
+    ports:
+      - "1337:1337"
     restart: unless-stopped
     networks:
       - musicapp-network
@@ -26,6 +28,8 @@ services:
     image: redis:alpine
     networks:
       - musicapp-network
+    #ports:
+     # - "6379:6379"
     deploy:
       restart_policy:
         condition: on-failure
@@ -35,9 +39,9 @@ services:
     # build:
     #   context: ./frontend
     #   dockerfile: Dockerfile
-    image: huyphanluong/music-app-frontend:latest
-    ports:
-      - "8000:5173"
+    image: huyphanluong/music-app-frontend:v2
+    #ports:
+     # - "5173:5173"
     networks:
       - musicapp-network
     depends_on:
@@ -45,14 +49,14 @@ services:
 
   # MongoDB service
   mongo:
-    image: mongo:8.0.1-noble
+    image: mongo:latest
     container_name: mongo_container
     environment:
       - MONGO_INITDB_DATABASE=music_streaming
     networks:
       - musicapp-network
-    ports:
-      - "27017:27017"
+    #ports:
+     # - "27017:27017"
     volumes:
       - mongo_data:/data/db
     deploy:
@@ -69,8 +73,9 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx-entrypoint.sh:/docker-entrypoint.d/00-nginx-entrypoint.sh
-      - ./nginx.conf:/etc/nginx/nginx.conf.template  # Use the template version of nginx.conf
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      #- ./nginx-entrypoint.sh:/docker-entrypoint.d/00-nginx-entrypoint.sh
+      # - ./nginx.conf:/etc/nginx/nginx.conf.template  # Use the template version of nginx.conf
     depends_on:
       - backend
       - frontend
