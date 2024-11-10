@@ -32,84 +32,174 @@ It is a small music player web app using the MERN stack (MongoDB, Express, React
 - **Music Player**: Users can play music, with features like play, pause, skip, and volume control.
 - **Responsive Design**: The app is designed to be responsive, working well on both desktop and mobile devices.
 
-### How to Set Up Locally:
 
-1. **Clone the Repository**:
+# Music App Deployment Guide
+
+This guide provides step-by-step instructions to deploy the Music App across three levels of deployment complexity. Ensure that Docker is installed on your system, and follow the specific instructions based on your level requirements.
+
+---
+
+## Prerequisites
+
+- Docker must be installed on your system.
+- For Level 3, two or more VPS instances running Linux (e.g., Ubuntu) are required.
+- Basic knowledge of SSH and Docker commands.
+- `sudo` permissions on each VPS instance.
+
+---
+
+## Level 1: Basic Docker Deployment
+
+1. **Unzip** `Music-App-Level-1.zip` into the source code folder.
+2. **Open Terminal** in the `Music-App-Level-1` folder.
+3. Run the following command to start the application:
+
    ```bash
-   git clone https://github.com/manni2000/Music-app.git
-   cd Music-app
+   docker compose up -d
    ```
 
-2. **Install Dependencies**:
-   - Navigate to the frontend directory and install dependencies:
-     ```bash
-     cd frontend
-     npm install
-     ```
-   - Navigate to the backend directory and install dependencies:
-     ```bash
-     cd ../backend
-     npm install
-     ```
+---
 
-3. **Set Up Environment Variables**:
-   - Create a `.env` file in the `backend` directory and configure the following environment variables:
-     ```env
-     MONGO_URI=your_mongodb_uri
-     JWT_SECRET=your_jwt_secret
-     ```
+## Level 2: Sharded Cluster Deployment with Docker
 
-4. **Start the Development Server**:
-   - Start the backend server:
-     ```bash
-     cd backend
-     node server
-     ```
-   - Start the frontend development server:
-     ```bash
-     cd ../frontend
-     npm start
-     ```
+1. **Unzip** `Music-App-Level-2.zip` into the source code folder.
+2. **Open Terminal** in the `Music-App-Level-2` folder.
+3. Run the following command to start the application:
 
-5. **Access the Application**:
-   - Once both servers are running, you can access the application by navigating to `http://localhost:1337` in your web browser.
-  
-## Preview
-![image](https://github.com/user-attachments/assets/8f855e54-56d0-4917-b957-6b0387f50695)
+   ```bash
+   docker compose up -d
+   ```
 
-## Here's a step-by-step guide to using the Music App once the live server is opened:
+### Configuration Steps:
 
-### Step 1: Open the Live Server
-- Navigate to the URL where the app is hosted.
+#### Config Server Initialization:
 
-### Step 2: Sign Up or Log In
-- **Sign Up:** If you are a new user, click on the "Sign Up" button and fill in the required details to create an account.
-- **Log In:** If you already have an account, click on the "Log In" button and enter your credentials.
+```bash
+docker exec -it configsvr_container mongosh
+rs.initiate({ _id: "configReplSet", configsvr: true, members: [{ _id: 0, host: "configsvr:27017" }] });
+# Use Ctrl + C to exit
+```
 
-### Step 3: Redirect to Home Page
-- After successfully signing up or logging in, you will be redirected to the home page.
+#### Shard 1 Replica Set Initialization:
 
-### Step 4: Navigate the Home Page
-- On the home page, you will see two main buttons: **Upload** and **Stream**.
+```bash
+docker exec -it shard1-primary_container mongosh
+rs.initiate({ _id: "shard1", members: [{ _id: 0, host: "shard1-primary:27017" }] });
+# Use Ctrl + C to exit
+```
 
-### Step 5: Upload Songs
-- Click on the **Upload** button.
-- A file selection dialog will appear. You can upload any number of songs from your device.
-- After uploading, the songs will be added to your library.
+#### Shard 2 Replica Set Initialization:
 
-### Step 6: Stream Songs
-- Click on the **Stream** button.
-- You will be able to see the list of songs available in your library.
-- You can play any song by clicking on it.
+```bash
+docker exec -it shard2-secondary_container mongosh
+rs.initiate({ _id: "shard2", members: [{ _id: 0, host: "shard2-secondary:27017" }] });
+# Use Ctrl + C to exit
+```
 
-### Step 7: Add to Playlist
-- While streaming a song, you have the option to add it to a playlist.
-- Create a new playlist or add the song to an existing playlist.
+#### Add Shards to the Cluster:
 
-### Step 8: Log Out
-- After you are done, you can log out by clicking on the **Log Out** button, which will be available on the navigation bar or in a dropdown menu.
+```bash
+docker exec -it mongos_container mongosh
+sh.addShard("shard1/shard1-primary:27017");
+sh.addShard("shard2/shard2-secondary:27017");
+# To check status:
+sh.status();
+```
 
-**These instructions should guide you through the basic functionalities of the Music App.**
+- **Note:** Remember to re-run the backend Docker after configuring the cluster.
 
+---
+
+## Level 3: Multi-VPS Docker Swarm Deployment
+
+### Prerequisites
+
+- Two or more VPS instances running Linux (e.g., Ubuntu).
+- Docker installed on each VPS.
+
+### Steps:
+
+1. **Connect to Each VPS** using SSH:
+
+   ```bash
+   ssh username@vps_ip_address
+   ```
+
+2. **Install Docker** (if not installed):
+
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y docker.io
+   docker --version
+   ```
+
+3. **Initialize Docker Swarm** on the Manager Node:
+
+   ```bash
+   docker swarm init --advertise-addr <MANAGER_IP_ADDRESS>
+   ```
+
+4. **Join Worker Nodes** to the Swarm:
+
+   ```bash
+   docker swarm join --token <SWARM_JOIN_TOKEN> <MANAGER_IP_ADDRESS>:2377
+   ```
+
+5. **Verify the Nodes** on the manager node:
+
+   ```bash
+   docker node ls
+   ```
+
+6. **Create Configuration Files** (`docker-compose.yaml`, `nginx.conf`) on the manager node.
+
+7. **Update Node Availability** (Optional):
+
+   - Drain a node: `docker node update --availability drain <NODE_ID>`
+   - Activate a node: `docker node update --availability active <NODE_ID>`
+
+8. **Deploy the Stack**:
+
+   ```bash
+   docker stack deploy -c docker-compose.yaml webapp
+   ```
+
+9. **Verify Deployment** by visiting `http://<MANAGER_IP_ADDRESS>`.
+
+10. **Monitor Services and Logs**:
+
+   - List running services: `docker service ls`
+   - View logs for a service: `docker service logs <service_name>`
+   - Inspect a node: `docker node inspect <NODE_ID>`
+   - List tasks on a node: `docker node ps <NODE_ID>`
+
+11. **Scale Services** (Optional):
+
+   ```bash
+   docker service scale webapp_frontend=2
+   ```
+
+---
+
+## Additional Commands
+
+- **Stop the containers**:
+
+  ```bash
+  docker compose down
+  ```
+
+- **Rebuild the containers** after code changes:
+
+  ```bash
+  docker compose up -d --build
+  ```
+
+## Important Notices
+
+- Ensure that the ports specified in the `docker-compose.yaml` files of Level 1 and Level 2 are not being used by other processes.
+- For Level 3, update security groups or firewall rules to allow necessary traffic on relevant ports (e.g., port 80 for HTTP and 443 for HTTPS).
+
+For more information, watch the [video demo](https://youtube.com/watch?v=n3m30rNU3Cc).
 
 
